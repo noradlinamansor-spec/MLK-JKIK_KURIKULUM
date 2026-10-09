@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Pemantauan Data Pasca Mesyuarat Kurikulum – JPPKK</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; background: #f0f2f5; color: #1f2328; }
+
+  /* ── Header ── */
+  .header { background: #1a3a5c; color: #fff; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; height: 64px; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-logo { width: 42px; height: 42px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .header-logo svg { width: 28px; height: 28px; }
+  .header-title { line-height: 1.3; }
+  .header-title h1 { font-size: 15px; font-weight: 700; letter-spacing: .3px; }
+  .header-title p  { font-size: 11px; opacity: .75; }
+  .header-right { font-size: 12px; opacity: .8; text-align: right; }
+
+  /* ── Layout ── */
+  .container { max-width: 1280px; margin: 0 auto; padding: 24px 20px; }
+
+  /* ── KPI Cards ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .kpi-card { background: #fff; border-radius: 10px; padding: 18px 20px; border-left: 4px solid; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  .kpi-card .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: #57606a; margin-bottom: 6px; }
+  .kpi-card .kpi-value { font-size: 30px; font-weight: 700; line-height: 1; }
+  .kpi-card .kpi-sub { font-size: 11px; color: #57606a; margin-top: 4px; }
+  .kpi-blue   { border-color: #3b82f6; } .kpi-blue .kpi-value   { color: #3b82f6; }
+  .kpi-green  { border-color: #22c55e; } .kpi-green .kpi-value  { color: #22c55e; }
+  .kpi-amber  { border-color: #f59e0b; } .kpi-amber .kpi-value  { color: #f59e0b; }
+  .kpi-red    { border-color: #ef4444; } .kpi-red .kpi-value    { color: #ef4444; }
+  .kpi-purple { border-color: #8b5cf6; } .kpi-purple .kpi-value { color: #8b5cf6; }
+
+  /* ── Charts row ── */
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .chart-card { background: #fff; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  .chart-card h3 { font-size: 13px; font-weight: 600; color: #1f2328; margin-bottom: 14px; }
+  .chart-wrap { position: relative; }
+
+  /* ── Filter bar ── */
+  .filter-bar { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.07); display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
+  .filter-group label { font-size: 11px; font-weight: 600; color: #57606a; text-transform: uppercase; letter-spacing: .4px; }
+  .filter-group select,
+  .filter-group input { padding: 7px 10px; border: 1px solid #d0d7de; border-radius: 6px; font-size: 13px; color: #1f2328; background: #fff; outline: none; transition: border-color .15s; }
+  .filter-group select:focus,
+  .filter-group input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+  .filter-group.search { flex: 1; min-width: 200px; }
+  .btn { padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: background .15s, transform .1s; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: #1a3a5c; color: #fff; }
+  .btn-primary:hover { background: #22507a; }
+  .btn-reset { background: #f3f4f6; color: #57606a; border: 1px solid #d0d7de; }
+  .btn-reset:hover { background: #e5e7eb; }
+  .btn-export { background: #22c55e; color: #fff; margin-left: auto; }
+  .btn-export:hover { background: #16a34a; }
+
+  /* ── Table ── */
+  .table-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden; margin-bottom: 24px; }
+  .table-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb; }
+  .table-header h3 { font-size: 14px; font-weight: 700; }
+  .table-count { font-size: 12px; color: #57606a; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { background: #f7f8fa; padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #57606a; border-bottom: 1px solid #e5e7eb; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { background: #eef0f3; }
+  thead th.sorted { color: #3b82f6; }
+  thead th .sort-icon { display: inline-block; margin-left: 4px; opacity: .5; }
+  thead th.sorted .sort-icon { opacity: 1; }
+  tbody tr { border-bottom: 1px solid #f0f2f5; transition: background .1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f7f8fa; }
+  tbody td { padding: 12px 14px; vertical-align: middle; }
+  .prog-name { font-weight: 600; color: #1f2328; }
+  .prog-code { font-size: 11px; color: #57606a; margin-top: 2px; }
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-selesai   { background: #dcfce7; color: #15803d; }
+  .badge-proses    { background: #fef9c3; color: #a16207; }
+  .badge-belum     { background: #fee2e2; color: #b91c1c; }
+  .badge-tertunda  { background: #ede9fe; color: #6d28d9; }
+  .tempoh { white-space: nowrap; }
+  .institusi-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .no-data { text-align: center; padding: 40px; color: #57606a; font-size: 13px; }
+  .action-btn { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; border: 1px solid #d0d7de; background: #fff; cursor: pointer; color: #1f2328; transition: background .1s; }
+  .action-btn:hover { background: #f3f4f6; }
+
+  /* ── Pagination ── */
+  .pagination { padding: 14px 20px; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .pagination-info { font-size: 12px; color: #57606a; }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid #d0d7de; background: #fff; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .1s; }
+  .page-btn:hover { background: #f3f4f6; }
+  .page-btn.active { background: #1a3a5c; color: #fff; border-color: #1a3a5c; font-weight: 700; }
+  .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Modal ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; width: 540px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
+  .modal-head { background: #1a3a5c; color: #fff; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; }
+  .modal-head h3 { font-size: 15px; font-weight: 700; }
+  .modal-close { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 22px; }
+  .modal-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .modal-field { flex: 1; }
+  .modal-field label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #57606a; display: block; margin-bottom: 5px; }
+  .modal-field input,
+  .modal-field select,
+  .modal-field textarea { width: 100%; padding: 8px 11px; border: 1px solid #d0d7de; border-radius: 6px; font-size: 13px; color: #1f2328; font-family: inherit; outline: none; }
+  .modal-field input:focus,
+  .modal-field select:focus,
+  .modal-field textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+  .modal-field textarea { resize: vertical; min-height: 70px; }
+  .modal-footer { padding: 14px 22px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* ── Toast ── */
+  .toast { position: fixed; bottom: 28px; right: 28px; background: #1a3a5c; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.2); transform: translateY(100px); opacity: 0; transition: all .3s ease; z-index: 200; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 620px) { .chart-row { grid-template-columns: 1fr; } .filter-bar { flex-direction: column; } }
+
+  /* ── Donut SVG ── */
+  .donut-wrap { display: flex; align-items: center; gap: 18px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { color: #57606a; }
+  .legend-val { font-weight: 700; color: #1f2328; margin-left: auto; padding-left: 12px; }
+
+  /* ── Detail view ── */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+  .detail-label { font-size: 11px; font-weight: 700; color: #57606a; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+  .detail-val { font-size: 13px; color: #1f2328; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f0f2f5; }
+  ::-webkit-scrollbar-thumb { background: #c9d2de; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-logo">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="24" height="24" rx="4" fill="#1a3a5c"/>
+        <path d="M6 20V12l8-6 8 6v8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="10" y="14" width="8" height="6" rx="1" stroke="#fff" stroke-width="1.8"/>
+        <circle cx="14" cy="10" r="1.5" fill="#f59e0b"/>
+      </svg>
+    </div>
+    <div class="header-title">
+      <h1>Dashboard Pemantauan Pasca Mesyuarat Kurikulum</h1>
+      <p>Bahagian Kurikulum, Jabatan Pembangunan Kemahiran (JPPKK)</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="clockDate"></div>
+    <div id="clockTime" style="font-size:16px;font-weight:700;"></div>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="container">
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-label">Jumlah Program</div>
+      <div class="kpi-value" id="kpiTotal">0</div>
+      <div class="kpi-sub">Program didaftarkan</div>
+    </div>
+    <div class="kpi-card kpi-green">
+      <div class="kpi-label">Selesai</div>
+      <div class="kpi-value" id="kpiSelesai">0</div>
+      <div class="kpi-sub">Tindakan selesai</div>
+    </div>
+    <div class="kpi-card kpi-amber">
+      <div class="kpi-label">Dalam Proses</div>
+      <div class="kpi-value" id="kpiProses">0</div>
+      <div class="kpi-sub">Sedang diproses</div>
+    </div>
+    <div class="kpi-card kpi-red">
+      <div class="kpi-label">Belum Tindakan</div>
+      <div class="kpi-value" id="kpiBelum">0</div>
+      <div class="kpi-sub">Perlu tindakan segera</div>
+    </div>
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-label">Tertunda</div>
+      <div class="kpi-value" id="kpiTertunda">0</div>
+      <div class="kpi-sub">Ditangguhkan</div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="chart-row">
+    <!-- Donut Status -->
+    <div class="chart-card">
+      <h3>📊 Taburan Status Tindakan</h3>
+      <div class="chart-wrap">
+        <div class="donut-wrap">
+          <svg id="donutChart" width="120" height="120" viewBox="0 0 120 120"></svg>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar: Tempoh Pengajian -->
+    <div class="chart-card">
+      <h3>📅 Program Mengikut Tempoh Pengajian</h3>
+      <div class="chart-wrap">
+        <svg id="barChart" width="100%" height="160" viewBox="0 0 340 160" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </div>
+
+    <!-- Bar: Institusi -->
+    <div class="chart-card">
+      <h3>🏫 Taburan Mengikut Institusi</h3>
+      <div class="chart-wrap">
+        <svg id="instChart" width="100%" height="160" viewBox="0 0 340 160" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="filter-group search">
+      <label>Carian</label>
+      <input type="text" id="searchInput" placeholder="Nama program atau institusi…" oninput="applyFilters()" />
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="filterStatus" onchange="applyFilters()">
+        <option value="">Semua Status</option>
+        <option value="Selesai">Selesai</option>
+        <option value="Dalam Proses">Dalam Proses</option>
+        <option value="Belum Tindakan">Belum Tindakan</option>
+        <option value="Tertunda">Tertunda</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Tempoh Pengajian</label>
+      <select id="filterTempoh" onchange="applyFilters()">
+        <option value="">Semua Tempoh</option>
+        <option value="1 Tahun">1 Tahun</option>
+        <option value="2 Tahun">2 Tahun</option>
+        <option value="3 Tahun">3 Tahun</option>
+        <option value="4 Tahun">4 Tahun</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Institusi</label>
+      <select id="filterInstitusi" onchange="applyFilters()">
+        <option value="">Semua Institusi</option>
+      </select>
+    </div>
+    <button class="btn btn-reset" onclick="resetFilters()">↺ Reset</button>
+    <button class="btn btn-primary" onclick="openModal()">+ Tambah Program</button>
+    <button class="btn btn-export" onclick="exportCSV()">⬇ Eksport CSV</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>Senarai Program Kurikulum</h3>
+      <span class="table-count" id="tableCount"></span>
+    </div>
+    <div class="table-wrap">
+      <table id="mainTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('bil')">#<span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('program')">Nama Program<span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('kod')">Kod Program<span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('tempoh')">Tempoh Pengajian<span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('institusi')">Institusi<span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('mesyuarat')">Tarikh Mesyuarat<span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('status')">Status Tindakan<span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pic')">PIC<span class="sort-icon">↕</span></th>
+            <th>Tindakan</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div class="pagination-info" id="pageInfo"></div>
+      <div class="page-btns" id="pageBtns"></div>
+    </div>
+  </div>
+</main>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Tambah Program Baharu</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Nama Program *</label>
+          <input type="text" id="fProgram" placeholder="cth: Sijil Teknologi Kimpalan" />
+        </div>
+        <div class="modal-field">
+          <label>Kod Program *</label>
+          <input type="text" id="fKod" placeholder="cth: SKM-M1-01" />
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Tempoh Pengajian *</label>
+          <select id="fTempoh">
+            <option value="">-- Pilih --</option>
+            <option>1 Tahun</option><option>2 Tahun</option>
+            <option>3 Tahun</option><option>4 Tahun</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Institusi *</label>
+          <input type="text" id="fInstitusi" placeholder="cth: IKM Kuala Lumpur" />
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Tarikh Mesyuarat</label>
+          <input type="date" id="fMesyuarat" />
+        </div>
+        <div class="modal-field">
+          <label>Status Tindakan *</label>
+          <select id="fStatus">
+            <option value="">-- Pilih --</option>
+            <option>Selesai</option>
+            <option>Dalam Proses</option>
+            <option>Belum Tindakan</option>
+            <option>Tertunda</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>PIC / Pegawai Bertanggungjawab</label>
+          <input type="text" id="fPIC" placeholder="Nama pegawai" />
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Catatan</label>
+          <textarea id="fCatatan" placeholder="Catatan tambahan…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-reset" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveRecord()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-head" style="background:#1a3a5c;">
+      <h3>Butiran Program</h3>
+      <button class="modal-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-reset" onclick="closeDetail()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Data ───────────────────────────────────────────────────────────────────
+let data = [
+  { id:1,  program:"Sijil Teknologi Kimpalan",         kod:"SKM-M1-01", tempoh:"2 Tahun", institusi:"IKM Kuala Lumpur",    mesyuarat:"2024-03-15", status:"Selesai",        pic:"Pn. Siti Aisyah", catatan:"Sukatan pelajaran telah dikemas kini mengikut standard SKM Tahap 1." },
+  { id:2,  program:"Diploma Teknologi Automotif",      kod:"DKM-RA-02", tempoh:"3 Tahun", institusi:"IKM Petaling Jaya",  mesyuarat:"2024-03-15", status:"Dalam Proses",   pic:"En. Razif Hamdan", catatan:"Sedang dalam proses semakan modul berkaitan teknologi EV." },
+  { id:3,  program:"Sijil Pemasangan Elektrik",        kod:"SKM-SE-03", tempoh:"1 Tahun", institusi:"IKBN Dusun Tua",     mesyuarat:"2024-04-10", status:"Selesai",        pic:"Pn. Rosmah Idris", catatan:"Pindaan pada unit kompetensi elekrik binaan telah diluluskan." },
+  { id:4,  program:"Diploma Teknologi Maklumat",       kod:"DKM-IT-04", tempoh:"3 Tahun", institusi:"ADTEC Shah Alam",    mesyuarat:"2024-04-10", status:"Belum Tindakan", pic:"En. Azhari Bakar", catatan:"Menunggu kelulusan daripada Ketua Bahagian." },
+  { id:5,  program:"Sijil Operasi Jentera Berat",      kod:"SKM-JB-05", tempoh:"1 Tahun", institusi:"IKBN Bachok",        mesyuarat:"2024-04-22", status:"Tertunda",       pic:"En. Suffian Ariff", catatan:"Ditunda kerana menunggu input daripada industri." },
+  { id:6,  program:"Diploma Pembuatan",                kod:"DKM-PM-06", tempoh:"3 Tahun", institusi:"ADTEC Batu Pahat",   mesyuarat:"2024-05-05", status:"Selesai",        pic:"Pn. Haslinda Yusof", catatan:"Modul CNC telah dikemas kini dengan teknologi terkini." },
+  { id:7,  program:"Sijil Teknologi Penyejukan",       kod:"SKM-AC-07", tempoh:"2 Tahun", institusi:"IKM Johor Bahru",    mesyuarat:"2024-05-05", status:"Dalam Proses",   pic:"En. Kamal Othman", catatan:"Perbincangan dengan pakar industri sedang berjalan." },
+  { id:8,  program:"Diploma Teknologi Binaan Bangunan",kod:"DKM-BB-08", tempoh:"3 Tahun", institusi:"IKBN Kuantan",       mesyuarat:"2024-05-20", status:"Belum Tindakan", pic:"Pn. Norzila Ahmad", catatan:"Dokumen kurikulum belum diterima daripada institusi." },
+  { id:9,  program:"Sijil Teknologi Paip",             kod:"SKM-TP-09", tempoh:"1 Tahun", institusi:"IKM Georgetown",     mesyuarat:"2024-06-03", status:"Selesai",        pic:"En. Ridhwan Samad", catatan:"Semakan sukatan pelajaran selesai, sedia untuk pengesahan." },
+  { id:10, program:"Diploma Teknologi Tekstil",        kod:"DKM-TX-10", tempoh:"2 Tahun", institusi:"IKBN Miri",          mesyuarat:"2024-06-03", status:"Dalam Proses",   pic:"Pn. Faridah Zain", catatan:"Modul baharu berkaitan fabrik mesra alam sedang dibangunkan." },
+  { id:11, program:"Sijil Kerja Kayu",                 kod:"SKM-KK-11", tempoh:"1 Tahun", institusi:"IKM Kuching",        mesyuarat:"2024-06-18", status:"Selesai",        pic:"En. Bong Huat Lee", catatan:"Pindaan telah dimasukkan dalam sistem PSD." },
+  { id:12, program:"Diploma Teknologi Maritim",        kod:"DKM-MT-12", tempoh:"3 Tahun", institusi:"ADTEC Kemaman",      mesyuarat:"2024-06-18", status:"Tertunda",       pic:"Pn. Azlina Rahim", catatan:"Ditangguh menunggu input daripada Jabatan Laut Malaysia." },
+  { id:13, program:"Sijil Teknologi Cetakan",          kod:"SKM-CT-13", tempoh:"2 Tahun", institusi:"IKM Kota Bharu",     mesyuarat:"2024-07-08", status:"Belum Tindakan", pic:"En. Fadzli Hassan", catatan:"Tiada maklum balas daripada penyelaras institusi." },
+  { id:14, program:"Diploma Elektronik Industri",      kod:"DKM-EI-14", tempoh:"3 Tahun", institusi:"ADTEC Arau",         mesyuarat:"2024-07-08", status:"Selesai",        pic:"Pn. Suhaila Noor", catatan:"Kandungan IoT dan automasi telah diintegrasikan dalam modul." },
+  { id:15, program:"Sijil Pembuatan Perabot",          kod:"SKM-PP-15", tempoh:"2 Tahun", institusi:"IKM Kota Kinabalu",  mesyuarat:"2024-07-22", status:"Dalam Proses",   pic:"En. Dennis Goh", catatan:"Menunggu sokongan peralatan daripada pihak industri." },
+];
+
+let editId = null;
+let filteredData = [...data];
+let sortKey = null, sortAsc = true;
+let currentPage = 1;
+const PAGE_SIZE = 8;
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const statusBadge = {
+  "Selesai":        '<span class="badge badge-selesai">✔ Selesai</span>',
+  "Dalam Proses":   '<span class="badge badge-proses">⏳ Dalam Proses</span>',
+  "Belum Tindakan": '<span class="badge badge-belum">✖ Belum Tindakan</span>',
+  "Tertunda":       '<span class="badge badge-tertunda">⏸ Tertunda</span>',
+};
+
+function showToast(msg, duration=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ─── KPI ─────────────────────────────────────────────────────────────────────
+function updateKPI() {
+  const count = s => data.filter(d => d.status === s).length;
+  document.getElementById('kpiTotal').textContent   = data.length;
+  document.getElementById('kpiSelesai').textContent  = count('Selesai');
+  document.getElementById('kpiProses').textContent   = count('Dalam Proses');
+  document.getElementById('kpiBelum').textContent    = count('Belum Tindakan');
+  document.getElementById('kpiTertunda').textContent = count('Tertunda');
+}
+
+// ─── Donut Chart ─────────────────────────────────────────────────────────────
+function drawDonut() {
+  const cfg = [
+    { label:"Selesai",        color:"#22c55e" },
+    { label:"Dalam Proses",   color:"#f59e0b" },
+    { label:"Belum Tindakan", color:"#ef4444" },
+    { label:"Tertunda",       color:"#8b5cf6" },
+  ];
+  const total = data.length || 1;
+  const vals = cfg.map(c => ({ ...c, val: data.filter(d => d.status === c.label).length }));
+  const cx=60, cy=60, r=48, ir=28; let angle=-Math.PI/2;
+  let paths = '';
+  vals.forEach(v => {
+    if (!v.val) return;
+    const sweep = (v.val/total)*2*Math.PI;
+    const x1=cx+r*Math.cos(angle), y1=cy+r*Math.sin(angle);
+    const x2=cx+r*Math.cos(angle+sweep), y2=cy+r*Math.sin(angle+sweep);
+    const xi1=cx+ir*Math.cos(angle), yi1=cy+ir*Math.sin(angle);
+    const xi2=cx+ir*Math.cos(angle+sweep), yi2=cy+ir*Math.sin(angle+sweep);
+    const large = sweep>Math.PI?1:0;
+    paths += `<path d="M${xi1},${yi1} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} L${xi2},${yi2} A${ir},${ir} 0 ${large},0 ${xi1},${yi1}" fill="${v.color}" opacity=".9"/>`;
+    angle += sweep;
+  });
+  paths += `<text x="60" y="56" text-anchor="middle" font-size="18" font-weight="700" fill="#1f2328">${total}</text><text x="60" y="70" text-anchor="middle" font-size="9" fill="#57606a">Program</text>`;
+  document.getElementById('donutChart').innerHTML = paths;
+  document.getElementById('donutLegend').innerHTML = vals.map(v =>
+    `<div class="legend-item"><span class="legend-dot" style="background:${v.color}"></span><span class="legend-label">${v.label}</span><span class="legend-val">${v.val}</span></div>`
+  ).join('');
+}
+
+// ─── Bar Chart (Tempoh) ───────────────────────────────────────────────────────
+function drawBarTempoh() {
+  const labels = ['1 Tahun','2 Tahun','3 Tahun','4 Tahun'];
+  const vals = labels.map(l => data.filter(d => d.tempoh === l).length);
+  const max = Math.max(...vals, 1);
+  const colors = ['#3b82f6','#22c55e','#f59e0b','#8b5cf6'];
+  const W=340, H=160, pad=36, bw=36, gap=18;
+  let bars='', axes='';
+  axes += `<line x1="${pad}" y1="10" x2="${pad}" y2="${H-30}" stroke="#e5e7eb" stroke-width="1.5"/>`;
+  axes += `<line x1="${pad}" y1="${H-30}" x2="${W-10}" y2="${H-30}" stroke="#e5e7eb" stroke-width="1.5"/>`;
+  labels.forEach((l,i) => {
+    const x = pad + i*(bw+gap) + 10;
+    const bh = ((vals[i]/max)*(H-55));
+    const y = H-30-bh;
+    bars += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="4" fill="${colors[i]}" opacity=".85"/>`;
+    bars += `<text x="${x+bw/2}" y="${y-5}" text-anchor="middle" font-size="11" font-weight="700" fill="${colors[i]}">${vals[i]}</text>`;
+    bars += `<text x="${x+bw/2}" y="${H-14}" text-anchor="middle" font-size="9" fill="#57606a">${l}</text>`;
+  });
+  document.getElementById('barChart').innerHTML = axes + bars;
+}
+
+// ─── Bar Chart (Institusi) ────────────────────────────────────────────────────
+function drawBarInstitusi() {
+  const count = {};
+  data.forEach(d => { count[d.institusi] = (count[d.institusi]||0)+1; });
+  const sorted = Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const max = Math.max(...sorted.map(x=>x[1]),1);
+  const W=340, H=160, padL=10, padR=60, barH=18, gap=8;
+  let bars='', axes='';
+  axes += `<line x1="${padL}" y1="5" x2="${padL}" y2="${H-15}" stroke="#e5e7eb" stroke-width="1.5"/>`;
+  const availW = W - padL - padR;
+  sorted.forEach(([inst,v],i) => {
+    const bw = (v/max)*availW;
+    const y = 12 + i*(barH+gap);
+    const shortName = inst.length>20 ? inst.substring(0,19)+'…' : inst;
+    bars += `<rect x="${padL}" y="${y}" width="${bw}" height="${barH}" rx="3" fill="#3b82d4" opacity=".8"/>`;
+    bars += `<text x="${bw+padL+5}" y="${y+barH/2+4}" font-size="10" font-weight="700" fill="#3b82d4">${v}</text>`;
+    bars += `<text x="${padL+2}" y="${y+barH/2+4}" font-size="9" fill="#fff">${bw>40?shortName:''}</text>`;
+    if(bw<=40) bars += `<text x="${padL+bw+22}" y="${y+barH-5}" font-size="9" fill="#57606a" text-anchor="start"> ${shortName}</text>`;
+  });
+  document.getElementById('instChart').innerHTML = axes + bars;
+}
+
+// ─── Filter Institusi Select ──────────────────────────────────────────────────
+function populateInstitutuFilter() {
+  const sel = document.getElementById('filterInstitusi');
+  const existing = [...sel.options].map(o=>o.value);
+  const insts = [...new Set(data.map(d=>d.institusi))].sort();
+  insts.forEach(i => {
+    if (!existing.includes(i)) {
+      const o = document.createElement('option'); o.value=i; o.textContent=i; sel.appendChild(o);
+    }
+  });
+}
+
+// ─── Filter + Table ───────────────────────────────────────────────────────────
+function applyFilters() {
+  const q   = document.getElementById('searchInput').value.toLowerCase();
+  const st  = document.getElementById('filterStatus').value;
+  const tp  = document.getElementById('filterTempoh').value;
+  const ins = document.getElementById('filterInstitusi').value;
+  filteredData = data.filter(d =>
+    (!q  || d.program.toLowerCase().includes(q) || d.institusi.toLowerCase().includes(q) || d.kod.toLowerCase().includes(q)) &&
+    (!st  || d.status === st) &&
+    (!tp  || d.tempoh === tp) &&
+    (!ins || d.institusi === ins)
+  );
+  if (sortKey) doSort(sortKey);
+  currentPage = 1;
+  renderTable();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('filterTempoh').value = '';
+  document.getElementById('filterInstitusi').value = '';
+  applyFilters();
+}
+
+function sortTable(key) {
+  if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = true; }
+  doSort(key);
+  currentPage = 1;
+  renderTable();
+}
+
+function doSort(key) {
+  const map = { bil:'id', program:'program', kod:'kod', tempoh:'tempoh', institusi:'institusi', mesyuarat:'mesyuarat', status:'status', pic:'pic' };
+  const field = map[key] || key;
+  filteredData.sort((a,b) => {
+    const av = (a[field]||'').toString().toLowerCase();
+    const bv = (b[field]||'').toString().toLowerCase();
+    return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const total = filteredData.length;
+  const pages = Math.max(1, Math.ceil(total/PAGE_SIZE));
+  if (currentPage > pages) currentPage = pages;
+  const start = (currentPage-1)*PAGE_SIZE, end = Math.min(start+PAGE_SIZE, total);
+  const slice = filteredData.slice(start, end);
+  document.getElementById('tableCount').textContent = `${total} rekod dijumpai`;
+  document.getElementById('pageInfo').textContent = total ? `Paparan ${start+1}–${end} daripada ${total} rekod` : '';
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="no-data">🔍 Tiada rekod dijumpai. Cuba ubah penapis.</td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map((d,i) => `
+      <tr>
+        <td>${start+i+1}</td>
+        <td><div class="prog-name">${d.program}</div><div class="prog-code">${d.kod}</div></td>
+        <td>${d.kod}</td>
+        <td class="tempoh">${d.tempoh}</td>
+        <td><span class="institusi-tag">${d.institusi}</span></td>
+        <td>${formatDate(d.mesyuarat)}</td>
+        <td>${statusBadge[d.status]||d.status}</td>
+        <td>${d.pic||'—'}</td>
+        <td style="white-space:nowrap">
+          <button class="action-btn" onclick="openDetail(${d.id})" title="Lihat Butiran">👁</button>
+          <button class="action-btn" onclick="editRecord(${d.id})" title="Edit">✏</button>
+          <button class="action-btn" onclick="deleteRecord(${d.id})" title="Padam" style="color:#ef4444">🗑</button>
+        </td>
+      </tr>`).join('');
+  }
+  renderPagination(pages);
+}
+
+function formatDate(s) {
+  if (!s) return '—';
+  const [y,m,d] = s.split('-');
+  const months = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
+  return `${d} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function renderPagination(pages) {
+  const container = document.getElementById('pageBtns');
+  let html = `<button class="page-btn" onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for (let p=1; p<=pages; p++) {
+    if (pages<=7 || p===1 || p===pages || (p>=currentPage-1 && p<=currentPage+1)) {
+      html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="changePage(${p})">${p}</button>`;
+    } else if (p===currentPage-2 || p===currentPage+2) {
+      html += `<span style="padding:0 4px;color:#57606a;align-self:center">…</span>`;
+    }
+  }
+  html += `<button class="page-btn" onclick="changePage(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
+  container.innerHTML = html;
+}
+
+function changePage(p) {
+  const pages = Math.ceil(filteredData.length/PAGE_SIZE);
+  if (p<1||p>pages) return;
+  currentPage = p; renderTable();
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openModal(id=null) {
+  editId = id;
+  document.getElementById('modalTitle').textContent = id ? 'Kemaskini Program' : 'Tambah Program Baharu';
+  const d = id ? data.find(x=>x.id===id) : {};
+  document.getElementById('fProgram').value   = d.program   || '';
+  document.getElementById('fKod').value       = d.kod       || '';
+  document.getElementById('fTempoh').value    = d.tempoh    || '';
+  document.getElementById('fInstitusi').value = d.institusi || '';
+  document.getElementById('fMesyuarat').value = d.mesyuarat || '';
+  document.getElementById('fStatus').value    = d.status    || '';
+  document.getElementById('fPIC').value       = d.pic       || '';
+  document.getElementById('fCatatan').value   = d.catatan   || '';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); editId=null; }
+
+function saveRecord() {
+  const prog = document.getElementById('fProgram').value.trim();
+  const kod  = document.getElementById('fKod').value.trim();
+  const temp = document.getElementById('fTempoh').value;
+  const inst = document.getElementById('fInstitusi').value.trim();
+  const stat = document.getElementById('fStatus').value;
+  if (!prog || !kod || !temp || !inst || !stat) { showToast('⚠ Sila lengkapkan semua medan bertanda *'); return; }
+  const rec = {
+    id: editId || (Math.max(0,...data.map(d=>d.id))+1),
+    program:   prog, kod, tempoh: temp, institusi: inst,
+    mesyuarat: document.getElementById('fMesyuarat').value,
+    status:    stat,
+    pic:       document.getElementById('fPIC').value.trim(),
+    catatan:   document.getElementById('fCatatan').value.trim(),
+  };
+  if (editId) { const idx = data.findIndex(d=>d.id===editId); data[idx]=rec; showToast('✔ Rekod berjaya dikemaskini!'); }
+  else        { data.push(rec); showToast('✔ Program baharu berjaya ditambah!'); }
+  closeModal(); refresh();
+}
+
+function editRecord(id) { openModal(id); }
+
+function deleteRecord(id) {
+  if (!confirm('Padam rekod ini? Tindakan ini tidak boleh dibatalkan.')) return;
+  data = data.filter(d=>d.id!==id);
+  showToast('🗑 Rekod berjaya dipadamkan.');
+  refresh();
+}
+
+// ─── Detail ───────────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const d = data.find(x=>x.id===id);
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-grid">
+      <div><div class="detail-label">Nama Program</div><div class="detail-val" style="font-weight:600">${d.program}</div></div>
+      <div><div class="detail-label">Kod Program</div><div class="detail-val">${d.kod}</div></div>
+      <div><div class="detail-label">Tempoh Pengajian</div><div class="detail-val">${d.tempoh}</div></div>
+      <div><div class="detail-label">Institusi</div><div class="detail-val">${d.institusi}</div></div>
+      <div><div class="detail-label">Tarikh Mesyuarat</div><div class="detail-val">${formatDate(d.mesyuarat)}</div></div>
+      <div><div class="detail-label">Status Tindakan</div><div class="detail-val">${statusBadge[d.status]||d.status}</div></div>
+      <div><div class="detail-label">PIC</div><div class="detail-val">${d.pic||'—'}</div></div>
+      <div></div>
+      <div style="grid-column:1/-1"><div class="detail-label">Catatan</div><div class="detail-val" style="background:#f7f8fa;padding:10px;border-radius:6px;border:1px solid #e5e7eb;margin-top:4px">${d.catatan||'Tiada catatan.'}</div></div>
+    </div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+function closeDetail() { document.getElementById('detailModal').classList.remove('open'); }
+
+// ─── Export CSV ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  const headers = ['Bil','Nama Program','Kod','Tempoh','Institusi','Tarikh Mesyuarat','Status','PIC','Catatan'];
+  const rows = filteredData.map((d,i) =>
+    [i+1, `"${d.program}"`, d.kod, d.tempoh, `"${d.institusi}"`, d.mesyuarat, d.status, `"${d.pic||''}"`, `"${d.catatan||''}"`].join(',')
+  );
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='kurikulum_data.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 CSV berjaya dieksport!');
+}
+
+// ─── Clock ───────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const days = ['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+  const months = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
+  document.getElementById('clockDate').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('clockTime').textContent =
+    now.toLocaleTimeString('ms-MY', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// ─── Refresh All ─────────────────────────────────────────────────────────────
+function refresh() {
+  updateKPI(); drawDonut(); drawBarTempoh(); drawBarInstitusi();
+  populateInstitutuFilter(); applyFilters();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  refresh();
+  updateClock(); setInterval(updateClock, 1000);
+  // Close modals on overlay click
+  document.getElementById('modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+  document.getElementById('detailModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetail(); });
+});
+</script>
+</body>
+</html>
